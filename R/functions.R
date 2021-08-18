@@ -202,7 +202,7 @@ parameter.estimate.table.row <- function(
   relatedTo      = NULL,
   superscript    = NULL,
   fixed          = NULL,
-  est            = NULL,
+  value          = NULL, # changed from est to value
   se             = NULL,
   rse            = NULL,
   lci95          = NULL,
@@ -234,19 +234,21 @@ parameter.estimate.table.row <- function(
     label <- sprintf("%s (%s)", label, units)
   }
   
+  # changed est to value --- 
   if (!is.null(trans) && !is.na(trans) && trans == "SD (CV%)") {
     g <- function(x) { 100*sqrt(exp(x^2) - 1) }
-    x <- est
-    est <- sprintf("%s (%s%%)", p(x, digits), p(g(x), digits))
+    x <- value
+    value <- sprintf("%s (%s%%)", p(x, digits), p(g(x), digits))
   } else {
-    est <- p(est, digits)
+    value <- p(value, digits)
   }
   
-  est <- paste0(est, superscript)
+  value <- paste0(value, superscript)
   
   if (fixed) {
-    est <- sprintf('%s Fixed', est)
+    value <- sprintf('%s Fixed', value)
   }
+  # up to here
   
   if (is.na(se)) {
     se <- na
@@ -276,10 +278,12 @@ parameter.estimate.table.row <- function(
       shrinkage <- sprintf("%s%%", p(shrinkage, digits))
     }
   }
-  all <- c(est=est, rse=rse, ci95=ci95, boot.median=boot.median, boot.ci95=boot.ci95, shrinkage=shrinkage)
+  
+  all <- c(value=value, rse=rse, ci95=ci95, boot.median=boot.median, boot.ci95=boot.ci95, shrinkage=shrinkage) #changed est to value
   paste0(c('<tr>',
            sprintf('<td class="%s">%s</td>', ifelse(isTRUE(indent), "paramlabelindent", "paramlabelnoindent"), label),
-           paste0(sprintf('<td>%s</td>', all[names(columns)]), collapse='\n'),
+           # paste0(sprintf('<td>%s</td>', all[names(columns)]), collapse='\n'),
+           paste0(sprintf('<td>%s</td>', all[names(all)]), collapse='\n'),
            '</tr>'), collapse='\n')
 }
 
@@ -314,9 +318,9 @@ parameter.estimate.table.row <- function(
 #'     columns=c(est="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"))
 #' @export
 pmxpartab <- function(
-  parframe,
+  parframe, meta, # added meta as argument
   
-  columns=c(est="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"),
+  columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"), # changed est to value
   
   sections = TRUE,
   section.labels = c(
@@ -331,7 +335,7 @@ pmxpartab <- function(
   digits=3) {
   
   if (isFALSE(show.fixed.to.zero)) {
-    parframe <- subset(parframe, !(fixed & est==0))
+    parframe <- subset(parframe, !(fixed & value==0)) #changed est to value
   }
   
   ncolumns <- length(columns) + 1
