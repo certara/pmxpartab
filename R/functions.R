@@ -1,3 +1,102 @@
+#' Setup model info function (@author: certara-alargajolli to check)
+#' 
+#' 
+parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL) {  #modified
+  
+  #Load xpose database
+  xpdb   <- xpose_data(prefix = run_prefix, runno = runno, dir = run_dir)
+  
+  # set-up bootstrap info if available
+  have.bootstrap <- !is.null(bootstrap)
+  read.bootstrap <- !is.null(read.bootstrap)
+  if (have.bootstrap & !(read.bootstrap)) {
+    boot_dir <- paste0(run_dir, run_dir.boot)  
+    boot_res <- sprintf("/raw_results_%s%s.csv", run_prefix, ifelse(is.null(runno.boot),runno,runno.boot))
+    boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)
+  } else if (have.bootstrap & read.bootstrap) {
+    boot <- boot.obj
+  }
+  
+  # extract par info using xpose 
+  yaml.file <- is.null(yaml.file)
+  if (yaml.file){
+    
+    prm <- get_prm(xpdb, transform = FALSE) %>%
+      rowwise() %>%
+      rename(name.xpose = name) %>%
+      mutate(meta = ifelse((label!=""),map(label,parse_parameter_description),list(list(name = '')))) 
+    
+    vec=prm %>% dplyr::select(m,n,diagonal,meta)
+    off.diag = which(prm$diagonal == FALSE)
+    for (i in 1:length(off.diag)) {
+      
+      prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
+                                                       ',',
+                                                       vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name),
+                                         type = 'IIV'))
+      
+    }
+    
+    prm$name = unlist(lapply(prm$meta, function(x) x[c('name')]))
+    
+    df_m = do.call(bind_rows, list(parmaters=prm$meta)) %>% as_tibble()
+    
+  } else { #yaml file
+    
+    prm <- get_prm(xpdb, transform = FALSE) %>%
+      rowwise() %>%
+      rename(name.xpose = name) %>%
+      mutate(meta = ifelse((label!=""),map(label,parse_parameter_description),list(list(name = '')))) 
+    
+    vec=prm %>% dplyr::select(m,n,diagonal,meta)
+    off.diag = which(prm$diagonal == FALSE)
+    for (i in 1:length(off.diag)) {
+      
+      prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
+                                                       ',',
+                                                       vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name),
+                                         type = 'IIV'))
+      
+    }
+    
+    prm$name = unlist(lapply(prm$meta, function(x) x[c('name')])) 
+    
+    meta <- read_yaml(file = "meta.yaml")
+    list(meta)
+    
+    meta$parameters
+    do.call(bind_rows, meta$parameters) %>% as_tibble() -> tmp
+    
+    df_m = tmp %>% select(name, label, units, trans, type)
+    
+  }
+  
+  # merge bootstrap information 
+  if (have.bootstrap) {
+    
+    if (min_suc){
+      boot = boot %>% filter(minimization_successful!=0) # default remove the unsuccessful runs    
+    } 
+    boot = boot[,(which(names(boot)=='ofv')+1):(which(regexpr("^se", names(boot), perl=T)==1)[1]-1)]  # select the columns of interest
+    boot = boot %>%
+      gather(key = "label_boot") %>% # long format
+      group_by(label_boot) %>%
+      mutate(bootstrap.median = median(value,na.rm = TRUE),
+             bootstrap.uci    = quantile(value,probs=c((1+conf.level)/2), na.rm = TRUE),
+             bootstrap.lci    = quantile(value,probs=c((1-conf.level)/2), na.rm = TRUE)) %>%
+      ungroup() %>% 
+      distinct(label_boot, .keep_all = TRUE) %>%
+      dplyr::select(-value)
+    
+    prm = cbind(prm,boot)     
+    
+  }
+  
+  list(prm,df_m)
+  
+}
+
+#'
 #' Get parameters in a data.frame
 #'
 #' @export
@@ -40,7 +139,7 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       shrinkage <- if ("shrinkage" %in% names(out)) as.numeric(out$shrinkage[j]) else NA
       
       # !! The boostratp output may not be uniquely identified by a "name", but rather raw nonmem nm_names
-      # @Anna, please confirm from here ---
+      # @certara-alargajolli, please confirm from here ---
       if (have.bootstrap && name %in% names(outputs$bootstrap$median)) {
         boot.median <- outputs$bootstrap$median[[name]]
         boot.lci <- outputs$bootstrap$lci[[name]][1]
@@ -60,7 +159,7 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
         boot.uci <- NA
       }
     }
-    # @Anna, please check up to here ---
+    # @certara-alargajolli, please check up to here ---
     
     if (fixed || is.null(se) || is.na(se)) {
       se <- NA
