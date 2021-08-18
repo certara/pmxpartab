@@ -1,6 +1,8 @@
 #' Setup model info function (@author: certara-alargajolli to check)
 #' 
 #' 
+#test
+
 parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL) {  #modified
   
   #Load xpose database
