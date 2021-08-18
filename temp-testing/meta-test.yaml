@@ -1,0 +1,70 @@
+---
+data:
+  full:     "../../data/full-pkpd-dataset.csv"
+  analysis: "../../data/analysis-poppk-dataset.csv"
+  nmtable:  "nmtable.csv"
+  vpctable: "vpctable.csv"
+
+namemap: 
+  theta:
+    - CL
+    - VC
+    - LAG
+    - F1
+    - WT_on_CL
+  sigma:
+    - DUMMY
+  omega:
+    - nCL
+    - nVC
+    - nLAG
+    - nF1
+
+parameters:
+  - name: CL
+    label: Clearance CL
+    units: L/h
+    type: Structural
+  
+  - name: VC
+    label: Central Volume
+    units: L
+    trans: exp
+    type: Structural
+    
+  - name: LAG
+    label: Absorption lag time 
+    units: h
+    trans: exp
+    type: Structural
+
+  - name: F1
+    label: Bioavailable fraction F
+    trans: ilogit
+    type: Structural
+
+  - name: WT_on_CL
+    label: Weight on CL/Q
+    expression: "&times; (WT/70)<sup><i>&theta;</i></sup>"
+    type: CovariateEffect
+    relatedTo: CL,Q
+    
+  - name: nCL
+    label: On CL
+    type: IIV
+    relatedTo: CL
+
+  - name: nVC
+    label: On Vc
+    type: IIV
+    relatedTo: VC
+    
+  - name: nLAG
+    label: On Abs. Lag
+    type: IIV
+    relatedTo: LAG
+
+  - name: nF1
+    label: On F
+    type: IIV
+    relatedTo: F1

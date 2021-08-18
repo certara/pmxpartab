@@ -62,5 +62,14 @@ parframe(out=df_o, meta=df_m)
 pmxpartab(parframe(out=df_o, meta=df_m), meta=df_m,
            columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"))
 
+# read meta from file
+
+library(yaml)
+test <- read_yaml(file = "../temp-testing/meta-test.yaml")
+list(test)
+metax <- do.call(bind_rows, test$parameters) %>% as_tibble()
+test_tab <- parframe(out=df_o, meta=metax)
+pmxpartab(parframe = test_tab, meta = metax, columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"))
+
 # use xpose output with parframe
 
