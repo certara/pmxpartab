@@ -377,7 +377,7 @@ parameter.estimate.table.row <- function(
     }
   }
   
-  all <- c(value=value, rse=rse, ci95=ci95, boot.median=boot.median, boot.ci95=boot.ci95, shrinkage=shrinkage) #changed est to value
+  all <- c(value=value, rse=rse, ci95=ifelse(have.bootstrap,boot.ci95,ci95), shrinkage=shrinkage) #changed est to value
   paste0(c('<tr>',
            sprintf('<td class="%s">%s</td>', ifelse(isTRUE(indent), "paramlabelindent", "paramlabelnoindent"), label),
            # paste0(sprintf('<td>%s</td>', all[names(columns)]), collapse='\n'),
