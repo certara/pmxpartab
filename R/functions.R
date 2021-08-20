@@ -140,11 +140,10 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       shrinkage <- if ("shrinkage" %in% names(out)) as.numeric(out$shrinkage[j]) else NA
       
       # !! The boostratp output may not be uniquely identified by a "name", but rather raw nonmem nm_names
-      # @certara-alargajolli, please confirm from here ---
-      if (have.bootstrap && name %in% names(out$bootstrap$median)) {
-        boot.median <- out$bootstrap$median[[name]]
-        boot.lci <- out$bootstrap$lci[[name]][1]
-        boot.uci <- out$bootstrap$uci[[name]][2]
+      if (have.bootstrap) {
+        boot.median <- out$bootstrap.median[j]
+        boot.lci <- out$bootstrap.lci[j]
+        boot.uci <- out$bootstrap.uci[j]
       }
     } else { #no parameters match
       
@@ -160,7 +159,6 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
         boot.uci <- NA
       }
     }
-    # @certara-alargajolli, please check up to here ---
     
     if (fixed || is.null(se) || is.na(se)) {
       se <- NA
