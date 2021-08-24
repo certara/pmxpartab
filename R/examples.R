@@ -1,3 +1,4 @@
+source("functions.R")
 # Working examples
 
 library(tidyverse)

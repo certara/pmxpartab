@@ -2,7 +2,7 @@
 #' 
 #' 
 
-parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL) {  #modified
+parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL, yaml.file.name = NULL) {  #modified by @certara-alargajolli
   
   #Load xpose database
   xpdb   <- xpose_data(prefix = run_prefix, runno = runno, dir = run_dir)
@@ -13,7 +13,8 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
   if (have.bootstrap & !(read.bootstrap)) {
     boot_dir <- paste0(run_dir, run_dir.boot)  
     boot_res <- sprintf("/raw_results_%s%s.csv", run_prefix, ifelse(is.null(runno.boot),runno,runno.boot))
-    boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)
+    boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)%>%
+    filter(model != 0) # modified by @certara-alargajolli
   } else if (have.bootstrap & read.bootstrap) {
     boot <- boot.obj
   }
@@ -28,7 +29,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
       mutate(meta = ifelse((label!=""),map(label,parse_parameter_description),list(list(name = '')))) 
     
     vec=prm %>% dplyr::select(m,n,diagonal,meta)
-    off.diag = which(prm$diagonal == FALSE)
+    off.diag = which(prm$diagonal == FALSE & prm$label=='')
     for (i in 1:length(off.diag)) {
       
       prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
@@ -50,7 +51,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
       mutate(meta = ifelse((label!=""),map(label,parse_parameter_description),list(list(name = '')))) 
     
     vec=prm %>% dplyr::select(m,n,diagonal,meta)
-    off.diag = which(prm$diagonal == FALSE)
+    off.diag = which(prm$diagonal == FALSE & prm$label=='')
     for (i in 1:length(off.diag)) {
       
       prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
@@ -62,7 +63,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     
     prm$name = unlist(lapply(prm$meta, function(x) x[c('name')])) 
     
-    meta <- read_yaml(file = "meta.yaml")
+    meta <- read_yaml(file = yaml.file.name)
     list(meta)
     
     meta$parameters
@@ -70,6 +71,25 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     
     df_m = tmp %>% select(name, label, units, trans, type)
     
+  }
+
+  # merge shrinkage information
+
+  if (nrow(prm %>% filter(type %in% c("ome","sig") & !fixed))>0) {
+    etashk = data.frame(type = "ome",
+                        shk = strsplit(xpdb$summary %>% filter(label=="etashk") %>% pull(value), split=", ")[[1]]) %>%
+      mutate(m = as.numeric(gsub(".*\\[(\\d+)\\].*", "\\1", shk)),
+             n = m, # added to ensure that shrinkage only joins diagonal omega
+             shk = as.numeric(gsub("\\[.*", "", shk)))
+
+    epsshk = data.frame(type = "sig",
+                        shk = strsplit(xpdb$summary %>% filter(label=="epsshk") %>% pull(value), split=", ")[[1]]) %>%
+      mutate(m = as.numeric(gsub(".*\\[(\\d+)\\].*", "\\1", shk)),
+             n = m, # added to ensure that shrinkage only joins diagonal omega
+             shk = as.numeric(gsub("\\[.*", "", shk)))
+    shk.tmp = rbind(etashk,epsshk)
+    prm = prm %>%
+      left_join(shk.tmp, by=c("type", "m", "n")) %>% rename(shrinkage = shk)
   }
   
   # merge bootstrap information 
@@ -313,6 +333,7 @@ parameter.estimate.table.row <- function(
   digits         = 3,
   indent         = TRUE,
   have.bootstrap = !is.null(boot.median),
+  columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"), # changed est to value
   ...) {
   
   # Check for superscript
@@ -380,8 +401,8 @@ parameter.estimate.table.row <- function(
   all <- c(value=value, rse=rse, ci95=ifelse(have.bootstrap,boot.ci95,ci95), shrinkage=shrinkage) #changed est to value
   paste0(c('<tr>',
            sprintf('<td class="%s">%s</td>', ifelse(isTRUE(indent), "paramlabelindent", "paramlabelnoindent"), label),
-           # paste0(sprintf('<td>%s</td>', all[names(columns)]), collapse='\n'),
-           paste0(sprintf('<td>%s</td>', all[names(all)]), collapse='\n'),
+           paste0(sprintf('<td>%s</td>', all[names(columns)]), collapse='\n'),
+           # paste0(sprintf('<td>%s</td>', all[names(all)]), collapse='\n'),
            '</tr>'), collapse='\n')
 }
 
