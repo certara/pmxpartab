@@ -298,7 +298,7 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       z$boot.uci[i] <- boot.uci
     }
   }
-  z <- subset(z, !is.na(value))
+  z <- subset(z, !is.na(value) & name!='')
   as.data.frame(z)
 }
 
