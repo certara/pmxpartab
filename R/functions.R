@@ -13,8 +13,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
   if (have.bootstrap & !(read.bootstrap)) {
     boot_dir <- paste0(run_dir, run_dir.boot)  
     boot_res <- sprintf("/raw_results_%s%s.csv", run_prefix, ifelse(is.null(runno.boot),runno,runno.boot))
-    boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)#%>%
-    # filter(model != 0) # modified by @certara-alargajolli
+    boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)
   } else if (have.bootstrap & read.bootstrap) {
     boot <- boot.obj
   }
@@ -90,16 +89,12 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     shk.tmp = rbind(etashk,epsshk)
     prm = prm %>%
       left_join(shk.tmp, by=c("type", "m", "n")) %>% rename(shrinkage = shk)
-      # mutate(shrinkage = if_else(is.na(shk), ".", paste0(shk, "%"))) %>%
-      # select(-shk)
-    
     if (prm$value[str_detect(prm$name.xpose,'SIGMA')]==1){ # error coded with fixed effects
       
       prm$shrinkage[str_detect(prm$label,'ERR') | str_detect(prm$label,'PROP') | str_detect(prm$label,'ADD')]=prm$shrinkage[str_detect(prm$name.xpose,'SIGMA')]
       
     }
-    
-    
+
   }
   
   # merge bootstrap information 
@@ -170,7 +165,7 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       shrinkage <- if ("shrinkage" %in% names(out)) as.numeric(out$shrinkage[j]) else NA
       
       # !! The boostratp output may not be uniquely identified by a "name", but rather raw nonmem nm_names
-      # @certara-alargajolli, please confirm from here ---
+
       if (have.bootstrap) {
         boot.median <- out$bootstrap.median[j]
         boot.lci <- out$bootstrap.lci[j]
@@ -190,7 +185,6 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
         boot.uci <- NA
       }
     }
-    # @certara-alargajolli, please check up to here ---
     
     if (fixed || is.null(se) || is.na(se)) {
       se <- NA
