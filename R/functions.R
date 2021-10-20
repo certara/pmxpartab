@@ -29,7 +29,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
       mutate(meta = ifelse((label!=""),map(label,parse_parameter_description),list(list(name = '')))) 
     
     vec=prm %>% dplyr::select(m,n,diagonal,meta)
-    off.diag = which(prm$diagonal == FALSE & prm$label=='')
+    off.diag = which(prm$diagonal == FALSE)
     for (i in 1:length(off.diag)) {
       
       prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
@@ -41,7 +41,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     
     prm$name = unlist(lapply(prm$meta, function(x) x[c('name')]))
     
-    df_m = do.call(bind_rows, list(parmaters=prm$meta)) %>% as_tibble()
+    df_m = do.call(bind_rows, list(parmaters=prm$meta)) %>% as_tibble() %>% mutate(type = factor(type, levels = c('Structural','CovariateEffect','IIV', 'IOV','RUV'))) %>% arrange(type) %>% mutate(type = as.character(type))
     
   } else { #yaml file
     
