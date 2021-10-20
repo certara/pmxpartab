@@ -90,6 +90,16 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     shk.tmp = rbind(etashk,epsshk)
     prm = prm %>%
       left_join(shk.tmp, by=c("type", "m", "n")) %>% rename(shrinkage = shk)
+      # mutate(shrinkage = if_else(is.na(shk), ".", paste0(shk, "%"))) %>%
+      # select(-shk)
+    
+    if (prm$value[str_detect(prm$name.xpose,'SIGMA')]==1){ # error coded with fixed effects
+      
+      prm$shrinkage[str_detect(prm$label,'ERR') | str_detect(prm$label,'PROP') | str_detect(prm$label,'ADD')]=prm$shrinkage[str_detect(prm$name.xpose,'SIGMA')]
+      
+    }
+    
+    
   }
   
   # merge bootstrap information 
