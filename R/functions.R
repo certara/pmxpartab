@@ -405,6 +405,17 @@ parameter.estimate.table.section <- function(label, ncolumns) {
            '</tr>'), collapse='\n')
 }
 
+parse_parameter_description <- function(string) {
+  # Returns a structured object representing a description of a parameter
+  # (in this example just a list with some attributes; only the name is mandatory)
+  parameter_description <- function(name, label=NULL, units=NULL, trans=NULL, type=NULL) {
+    list(name=name, label=label, units=units, trans=trans, type=type)
+  }
+  
+  x <- str2lang(paste0("parameter_description(", string, ")"))
+  x[[2]] <- as.character(x[[2]]) # Interpret the first element (name) as a string even if not quoted
+  eval(x)
+}
 parameter.estimate.table.row <- function(
   name,
   label          = NULL,
@@ -596,15 +607,4 @@ knit_print.pmxpartab <- function(x, ...) {
 #' x <- "CL, 'Clearance', 'L/h', type='Structural'"
 #' parse_parameter_description(x)
 #' @export
-parse_parameter_description <- function(string) {
-  # Returns a structured object representing a description of a parameter
-  # (in this example just a list with some attributes; only the name is mandatory)
-  parameter_description <- function(name, label=NULL, units=NULL, trans=NULL, type=NULL) {
-    list(name=name, label=label, units=units, trans=trans, type=type)
-  }
-  
-  x <- str2lang(paste0("parameter_description(", string, ")"))
-  x[[2]] <- as.character(x[[2]]) # Interpret the first element (name) as a string even if not quoted
-  eval(x)
-}
 
