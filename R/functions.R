@@ -21,19 +21,19 @@
 #' @param yaml.file.name name of the yaml file.
 #' @return meta file information (df_m) and parameter information (prm)
 
-parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL, yaml.file.name = NULL) {  #modified by @certara-alargajolli
+parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, read.boot = NULL, boot.obj = NULL, yaml.file = NULL, yaml.file.name = NULL) {  
   
   #Load xpose database
   xpdb   <- xpose_data(prefix = run_prefix, runno = runno, dir = run_dir)
   
   # set-up bootstrap info if available
   have.bootstrap <- !is.null(bootstrap)
-  read.bootstrap <- !is.null(read.bootstrap)
+  read.bootstrap <- !is.null(read.boot)
   if (have.bootstrap & !(read.bootstrap)) {
     boot_dir <- paste0(run_dir, run_dir.boot)  
     boot_res <- sprintf("/raw_results_%s%s.csv", run_prefix, ifelse(is.null(runno.boot),runno,runno.boot))
     boot   <- read.csv(paste0(boot_dir, boot_res), header = TRUE, check.names = FALSE)
-  } else if (have.bootstrap & read.bootstrap) {
+  } else if (have.bootstrap & have.boot.obj) {
     boot <- boot.obj
   }
   
@@ -87,6 +87,10 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bo
     meta$parameters
     do.call(bind_rows, meta$parameters) %>% as_tibble() -> tmp
     
+    if(is.null(tmp$trans)) {tmp$trans = NA}
+    if(is.null(tmp$units)) {tmp$units = NA}
+    if(is.null(tmp$label)) {tmp$label = NA}
+    if(is.null(tmp$type)) {tmp$type = NA}  										   
     df_m = tmp %>% select(name, label, units, trans, type)
     
   }
