@@ -1,6 +1,25 @@
-#' Setup model info function (@author: certara-alargajolli to check)
+#' @description  reads all relevant inputs (ie, parameter estimates, bootstrap, shrinkage, .) using directly model run or with the help of a YAML file. 
+#' The parameter name must be provided in the model file. Other fields are optional and can be provided either in (1) a .mod file or a (2) YAML file.
+#' Few fields needs to be inputted directly from user to complete the table:
+#'   name (compulsory): name of parameter (eg, CL, Vd, nCL, nVd, corr(nCL, nVd), etc.)
+#'   label:  description of parameter (eg, "Volume of distribution", "Apparent Clearance", etc.) 
+#'   units: parameter unit (eg, L/h, 1/hr, etc)
+#'   trans: parameter transformation (ie, %, exp, ilogit, sqrt, CV%)
+#'   type: (ie, Typical Values, Between Subject Variability, Inter Occasion Variability, Residual Error, Covariates)
 #' 
-#' 
+#' @param run_dir NONMEM model directory
+#' @param run_prefix NONMEM run number prefix
+#' @param runno NONMEM run number  
+#' @param bootstrap flag for availability of bootstrap results. 
+#' @param run_dir.boot bootstrap results directory
+#' @param runno.boot bootstrap NONMEM run number (if changes from runno)
+#' @param conf.level bootstrap results confidence interval. By default set to 95%.
+#' @param min_succ filter bootstrap results on minimization successful. By default set to TRUE.
+#' @param read.boot flag for reading directly the customized filtering bootstrap raw_results.csv
+#' @param boot.obj customized filtering bootstrap raw_results.csv data frame passed by user 
+#' @param yaml.file flag for using the yaml.file option. All the non-compulsory fields (ie, label, trans, units, type) will be read from yaml file. 
+#' @param yaml.file.name name of the yaml file.
+#' @return meta file information (df_m) and parameter information (prm)
 
 parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, read.bootstrap = NULL, boot.obj = NULL, run_dir.boot = NULL, runno.boot = NULL, conf.level = 0.95, min_suc = TRUE, yaml.file = NULL, yaml.file.name = NULL) {  #modified by @certara-alargajolli
   
