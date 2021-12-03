@@ -29,6 +29,7 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, run_dir
   # set-up bootstrap info if available
   have.bootstrap <- !is.null(bootstrap)
   read.bootstrap <- !is.null(read.boot)
+  have.boot.obj  <- !is.null(boot.obj) 										 
   if (have.bootstrap & !(read.bootstrap)) {
     boot_dir <- paste0(run_dir, run_dir.boot)  
     boot_res <- sprintf("/raw_results_%s%s.csv", run_prefix, ifelse(is.null(runno.boot),runno,runno.boot))
