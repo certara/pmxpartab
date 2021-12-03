@@ -327,6 +327,68 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
   as.data.frame(z)
 }
 
+#' @description Uses the output from parframe to generate a parameter estimates table in HTML 
+#' 
+#' @param parframe object from parframe
+#' @param meta meta information data frame from parframe2setup
+#' @param columns which information to display in the table
+#' @param sections flag for having separated sections displayed
+#' @param section.labels which sections will be displayed
+#' @param show.fixed.to.zero flag to show or not parameter fixed to zero. By default will be not displayed.
+#' @param na how NA will be displayed
+#' @param digits how many digits will be displayed
+
+pmxpartab <- function(
+  parframe, meta, # added meta as argument
+  
+  columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"), # changed est to value
+  
+  sections = TRUE,
+  section.labels = c(
+    Structural      = "Typical Values",
+    CovariateEffect = "Covariate Effects",
+    RUV             = "Residual Error",
+    IIV             = "Between Subject Variability",
+    IOV             = "Inter-Occasion Variability"),
+  
+  show.fixed.to.zero=F,
+  na="n/a",
+  digits=3) {
+  
+  if (isFALSE(show.fixed.to.zero)) {
+    parframe <- subset(parframe, !(fixed & value==0)) #changed est to value
+  }
+  
+  ncolumns <- length(columns) + 1
+  
+  thead <- paste0('<tr>\n<th rowspan="2">Parameter</th>\n',
+                  paste0(paste0('<th rowspan="2">', columns, '</th>'), collapse="\n"), '\n</tr>')
+  
+  
+  tbody <- ""
+  for (i in 1:nrow(parframe)) {
+    if (isTRUE(sections)) {
+      newsection <- (!is.null(parframe$type) && !is.na(parframe$type[i]) && (i == 1 || parframe$type[i] != parframe$type[i-1]))
+      if (newsection) {
+        type <- parframe$type[i]
+        if (type %in% names(meta$labels)) {
+          label <- meta$labels[[type]]
+        } else if (type %in% names(section.labels)) {
+          label <- section.labels[[type]]
+        } else {
+          label <- type
+        }
+        
+        tbody <- paste0(tbody, parameter.estimate.table.section(label, ncolumns=ncolumns), '\n')
+      }
+    }
+    args <- c(parframe[i,], list(na=na, digits=digits, indent=sections))
+    tbody <- paste0(tbody, do.call(parameter.estimate.table.row, args), '\n')
+  }
+  
+  table <- paste0('<table>\n<thead>\n', thead, '\n</thead>\n<tbody>\n', tbody, '\n</tbody>\n</table>\n')
+  structure(table, class=c("pmxpartab", "html", "character"), html=TRUE)
+}
 
 # Internal function to help format numbers
 p <- function(x, digits=3, flag="", round.integers=FALSE){
@@ -468,58 +530,6 @@ parameter.estimate.table.row <- function(
 #' 
 #' pmxpartab(parframe(outputs, meta),
 #'     columns=c(est="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"))
-#' @export
-pmxpartab <- function(
-  parframe, meta, # added meta as argument
-  
-  columns=c(value="Estimate", rse="RSE%", ci95="95%CI", shrinkage="Shrinkage"), # changed est to value
-  
-  sections = TRUE,
-  section.labels = c(
-    Structural      = "Typical Values",
-    CovariateEffect = "Covariate Effects",
-    RUV             = "Residual Error",
-    IIV             = "Between Subject Variability",
-    IOV             = "Inter-Occasion Variability"),
-  
-  show.fixed.to.zero=F,
-  na="n/a",
-  digits=3) {
-  
-  if (isFALSE(show.fixed.to.zero)) {
-    parframe <- subset(parframe, !(fixed & value==0)) #changed est to value
-  }
-  
-  ncolumns <- length(columns) + 1
-  
-  thead <- paste0('<tr>\n<th rowspan="2">Parameter</th>\n',
-                  paste0(paste0('<th rowspan="2">', columns, '</th>'), collapse="\n"), '\n</tr>')
-  
-  
-  tbody <- ""
-  for (i in 1:nrow(parframe)) {
-    if (isTRUE(sections)) {
-      newsection <- (!is.null(parframe$type) && !is.na(parframe$type[i]) && (i == 1 || parframe$type[i] != parframe$type[i-1]))
-      if (newsection) {
-        type <- parframe$type[i]
-        if (type %in% names(meta$labels)) {
-          label <- meta$labels[[type]]
-        } else if (type %in% names(section.labels)) {
-          label <- section.labels[[type]]
-        } else {
-          label <- type
-        }
-        
-        tbody <- paste0(tbody, parameter.estimate.table.section(label, ncolumns=ncolumns), '\n')
-      }
-    }
-    args <- c(parframe[i,], list(na=na, digits=digits, indent=sections))
-    tbody <- paste0(tbody, do.call(parameter.estimate.table.row, args), '\n')
-  }
-  
-  table <- paste0('<table>\n<thead>\n', thead, '\n</thead>\n<tbody>\n', tbody, '\n</tbody>\n</table>\n')
-  structure(table, class=c("pmxpartab", "html", "character"), html=TRUE)
-}
 
 
 #' Print \code{pmxpartab} object.
