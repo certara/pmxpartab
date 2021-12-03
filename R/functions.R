@@ -145,10 +145,14 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, run_dir
   
 }
 
-#'
-#' Get parameters in a data.frame
-#'
-#' @export
+#' @description Get all relevant parameter information in a data.frame, input the desired transformation for parameters 
+								 
+#' and finally merge parameter estimates with their corresponding meta information  
+#' 
+#' @param out paramter data frame from parframe2setup
+#' @param meta meta information data frame from parframe2setup
+#' @param bootstrap flag for availability of bootstrap results
+#' @param conf.level confidence interval of parameter estimates using normal distribution assumptions (in case no bootstrap rasults are available). By default set to 95%. 
 parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
   z <- meta
   
