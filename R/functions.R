@@ -285,10 +285,11 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       }
     } else if (!is.na(trans) && trans == "CV%") {
       g <- function(x) { 100 * sqrt(exp(x) - 1) }
-      dg <- function(x) { 100 * exp(x)/(2*sqrt(exp(x)-1)) }
+
       x <- value
       value <- g(x)
       if (!fixed) {
+        dg <- function(x) { 100 * exp(x)/(2*sqrt(exp(x)-1)) }															 
         se  <- se*dg(x)
         rse <- 100*se/abs(value)
         ci  <- g(ci)
@@ -300,10 +301,11 @@ parframe <- function(out, meta, bootstrap = NULL, conf.level = 0.95) {
       }
     } else if (!is.na(trans) && trans == "CV2%") {
       g <- function(x) { 100*sqrt(exp(x^2) - 1) }
-      dg <- function(x) { 100*0.5*(1/sqrt(exp(x^2) - 1))*exp(x^2)*2*x }
+
       x <- value
       value <- g(x)
       if (!fixed) {
+        dg <- function(x) { 100*0.5*(1/sqrt(exp(x^2) - 1))*exp(x^2)*2*x }																		 
         se  <- se*dg(x)
         rse <- 100*se/abs(value)
         ci  <- g(ci)
