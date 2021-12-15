@@ -54,6 +54,9 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, run_dir
       prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
                                                        ',',
                                                        vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name),
+                                         label = paste0('Correlation ',vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$label,
+                                                        ',',
+                                                        vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$label),
                                          type = 'IIV'))
       
     }
@@ -76,6 +79,9 @@ parframe2setup <- function(run_dir, run_prefix, runno, bootstrap = NULL, run_dir
       prm$meta[off.diag[i]] <- list(list(name = paste0(vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name,
                                                        ',',
                                                        vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$name),
+                                         label = paste0('Correlation ',vec$meta[[which(vec$m==prm$m[off.diag[i]] & vec$diagonal == TRUE)[1]]]$label,
+                                                        ',',
+                                                        vec$meta[[which(vec$n==prm$n[off.diag[i]] & vec$diagonal == TRUE)[1]]]$label),
                                          type = 'IIV'))
       
     }
