@@ -370,8 +370,8 @@ pmxpartab <- function(
   
   ncolumns <- length(columns) + 1
   
-  thead <- paste0('<tr>\n<th rowspan="2">Parameter</th>\n',
-                  paste0(paste0('<th rowspan="2">', columns, '</th>'), collapse="\n"), '\n</tr>') 
+  thead <- paste0('<tr>\n<th>Parameter</th>\n',
+                  paste0(paste0('<th>', columns, '</th>'), collapse="\n"), '\n</tr>')
   
   
   tbody <- ""
