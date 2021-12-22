@@ -7,80 +7,71 @@ namemap:
     - Q
     - KA
     - ERRPROP
-  sigma:
-    - DUMMY
   omega:
     - nV2
     - nCL    
     - nV3
     - nQ
     - nKA
-    - nOCC1_on_V
 
 parameters:
   - name: V2
-    label: Central volume V2
+    label: Central volume
     units: L
     trans: 
     type: Structural
 
   - name: CL
-    label: Clearance CL
+    label: Clearance
     units: L/h
     trans: 
     type: Structural
     
   - name: V3
-    label: Peripheral volume V3
+    label: Peripheral volume
     units: L
     trans: 
     type: Structural    
   
   - name: Q
-    label: Peripheral clearance Q
+    label: Peripheral clearance
     units: L/h
     trans: 
     type: Structural
 
   - name: KA
-    label: Absorption rate constant Ka
+    label: Absorption rate constant
     units: "h<sup>-1</sup>"
     trans: 
     type: Structural
     
   - name: nV2
-    label: On V2
-    type: IIV
-    relatedTo: V2       
+    label: On Central volume
+    type: IIV     
        
   - name: nCL,nV2
-    label: Correlation CL, V2
-    type: IIV
-    relatedTo: CL,V2     
+    label: Correlation on Clearance, on Central Volume
+    type: IIV   
     
   - name: nCL
-    label: On CL
+    label: On Clearance
     type: IIV
-    relatedTo: CL     
         
   - name: nV3
     label: On V3
     type: IIV
-    relatedTo: V3
 
   - name: nQ
     label: On Q
     type: IIV
-    relatedTo: Q
 
   - name: nKA
     label: On Ka
     type: IIV
-    relatedTo: KA
 
   - name: ERRPROP
-    label: Proportional
-    units: 
+    label: Proportional Error
+    units: '-'
     trans: 
     type: RUV
 
